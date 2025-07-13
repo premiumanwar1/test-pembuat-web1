@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Hamster Wheel</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #6b7b8c;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.5s;
+    }
+
+    .wheel-container {
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .wheel {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border: 3px solid white;
+      border-radius: 50%;
+      animation: spin 2s linear infinite;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      background: radial-gradient(circle, transparent 70%, #5c6a78 71%);
+      cursor: pointer;
+      transition: border-color 0.5s;
+    }
+
+    .cross {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cross::before,
+    .cross::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 10px;
+      background: #4a5b69;
+      top: 50%;
+      left: 0;
+      transform-origin: center;
+      transition: background-color 0.5s;
+    }
+
+    .cross::before {
+      transform: rotate(45deg);
+    }
+
+    .cross::after {
+      transform: rotate(-45deg);
+    }
+
+    .hamster {
+      width: 40px;
+      height: 40px;
+      background: #f4c07a;
+      border-radius: 50%;
+      animation: bounce 0.3s infinite alternate;
+      position: relative;
+      z-index: 10;
+      transition: background-color 0.5s;
+    }
+
+    .ear {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #d9a566;
+      border-radius: 50%;
+      top: -5px;
+      transition: background-color 0.5s;
+    }
+
+    .ear.left { left: 5px; }
+    .ear.right { right: 5px; }
+
+    .eye {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #000;
+      border-radius: 50%;
+      top: 15px;
+    }
+
+    .eye.left { left: 10px; }
+    .eye.right { right: 10px; }
+
+    .base {
+      width: 200px;
+      height: 10px;
+      background: #2e3b4b;
+      position: absolute;
+      top: 210px;
+      transition: background-color 0.5s;
+    }
+
+    .slider {
+      width: 80px;
+      height: 4px;
+      background: white;
+      position: absolute;
+      top: 214px;
+      left: 60px;
+      transition: background-color 0.5s;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 8px 15px;
+      background: #4a5b69;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background: #5c6a78;
+    }
+
+    /* Night mode styles */
+    body.night-mode {
+      background-color: #2c3e50;
+    }
+
+    .night-mode .wheel {
+      border-color: #ecf0f1;
+    }
+
+    .night-mode .cross::before,
+    .night-mode .cross::after {
+      background: #34495e;
+    }
+
+    .night-mode .hamster {
+      background: #e67e22;
+    }
+
+    .night-mode .ear {
+      background: #d35400;
+    }
+
+    .night-mode .base {
+      background: #1a252f;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wheel-container">
+    <div class="wheel">
+      <div class="cross"></div>
+      <div class="hamster">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+      </div>
+    </div>
+    <div class="base"></div>
+    <div class="slider"></div>
+  </div>
+
+  <div class="controls">
+    <button id="faster">Faster</button>
+    <button id="slower">Slower</button>
+    <button id="reverse">Reverse</button>
+    <button id="toggle-theme">Toggle Day/Night</button>
+  </div>
+
+  <script>
+    const wheel = document.querySelector('.wheel');
+    const hamster = document.querySelector('.hamster');
+    const body = document.body;
+    
+    // Pause/play on click
+    wheel.addEventListener('click', () => {
+      if (wheel.style.animationPlayState === 'paused') {
+        wheel.style.animationPlayState = 'running';
+        hamster.style.animationPlayState = 'running';
+      } else {
+        wheel.style.animationPlayState = 'paused';
+        hamster.style.animationPlayState = 'paused';
+      }
+    });
+    
+    // Speed control with buttons
+    document.getElementById('faster').addEventListener('click', () => {
+      const currentSpeed = parseFloat(getComputedStyle(wheel).animationDuration);
+      wheel.style.animationDuration = `${Math.max(0.1, currentSpeed - 0.2)}s`;
+    });
+
+    document.getElementById('slower').addEventListener('click', () => {
+      const currentSpeed = parseFloat(getComputedStyle(wheel).animationDuration);
+      wheel.style.animationDuration = `${currentSpeed + 0.2}s`;
+    });
+
+    document.getElementById('reverse').addEventListener('click', () => {
+      wheel.style.animationDirection = 
+        wheel.style.animationDirection === 'reverse' ? 'normal' : 'reverse';
+    });
+
+    // Speed control with mouse wheel
+    wheel.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const currentSpeed = parseFloat(getComputedStyle(wheel).animationDuration);
+      let newSpeed = currentSpeed + (e.deltaY > 0 ? 0.1 : -0.1);
+      newSpeed = Math.max(0.1, Math.min(5, newSpeed)); // Limit between 0.1s and 5s
+      wheel.style.animationDuration = `${newSpeed}s`;
+    });
+
+    // Night mode toggle
+    document.getElementById('toggle-theme').addEventListener('click', () => {
+      body.classList.toggle('night-mode');
+    });
+  </script>
+</body>
+</html>
